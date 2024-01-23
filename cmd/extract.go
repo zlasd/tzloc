@@ -1,18 +1,48 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os/exec"
 	"strings"
+	"text/template"
 )
+
+type LineParam struct {
+	Identifier string
+	Value      string
+}
 
 func main() {
 	tzDataPath := GetTzDataPath()
 	tzList := LoadTzList(tzDataPath)
+	lines := make([]LineParam, 0, len(tzList))
 	for _, tz := range tzList {
-		fmt.Println(GetIdentifierName(tz), "=", tz)
+		//fmt.Println(GetIdentifierName(tz), "=", tz)
+		lines = append(lines, LineParam{
+			Identifier: GetIdentifierName(tz),
+			Value:      tz,
+		})
 	}
+
+	tmplStr := `
+package tzloc
+
+const (
+{{range .}}
+	{{.Identifier}} = "{{.Value}}"{{end}}
+)
+`
+	fmt.Println(tmplStr)
+	var buf []byte
+	buffer := bytes.NewBuffer(buf)
+	tmpl := template.Must(template.New("timezone").Parse(tmplStr))
+	err := tmpl.Execute(buffer, lines)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(string(buffer.Bytes()))
 }
 
 func GetTzDataPath() string {
