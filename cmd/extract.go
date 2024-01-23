@@ -40,6 +40,10 @@ func main() {
 const ({{range .}}
 	{{.Identifier}} = "{{.Value}}"{{end}}
 )
+
+var locationMap = map[string]struct{}{
+{{range .}}	{{.Identifier}}: {},
+{{end}}}
 `
 	var buf []byte
 	buffer := bytes.NewBuffer(buf)
