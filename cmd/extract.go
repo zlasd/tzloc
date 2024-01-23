@@ -2,11 +2,17 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 	"text/template"
+)
+
+var (
+	OutputFile string
 )
 
 type LineParam struct {
@@ -15,6 +21,9 @@ type LineParam struct {
 }
 
 func main() {
+	flag.StringVar(&OutputFile, "output", "", "output file path")
+	flag.Parse()
+
 	tzDataPath := GetTzDataPath()
 	tzList := LoadTzList(tzDataPath)
 	lines := make([]LineParam, 0, len(tzList))
@@ -26,15 +35,12 @@ func main() {
 		})
 	}
 
-	tmplStr := `
-package tzloc
+	tmplStr := `package tzloc
 
-const (
-{{range .}}
+const ({{range .}}
 	{{.Identifier}} = "{{.Value}}"{{end}}
 )
 `
-	fmt.Println(tmplStr)
 	var buf []byte
 	buffer := bytes.NewBuffer(buf)
 	tmpl := template.Must(template.New("timezone").Parse(tmplStr))
@@ -42,7 +48,11 @@ const (
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println(string(buffer.Bytes()))
+	out := buffer.Bytes()
+	if err := os.WriteFile(OutputFile, out, 0644); err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(string(out))
 }
 
 func GetTzDataPath() string {
