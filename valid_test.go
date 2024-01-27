@@ -2,6 +2,7 @@ package tzloc
 
 import (
 	"testing"
+	"time"
 )
 
 func TestValidLocation(t *testing.T) {
@@ -34,7 +35,11 @@ func TestValidLocation(t *testing.T) {
 }
 
 func TestGetLocationList(t *testing.T) {
-	if got := GetLocationList(); len(got) < 100 {
-		t.Errorf("GetLocationList() = %v", got)
+	locations := GetLocationList()
+	for _, loc := range locations {
+		_, err := time.LoadLocation(loc)
+		if err != nil {
+			t.Errorf("%v is not a valid location", loc)
+		}
 	}
 }

@@ -28,7 +28,10 @@ func main() {
 	tzList := LoadTzList(tzDataPath)
 	lines := make([]LineParam, 0, len(tzList))
 	for _, tz := range tzList {
-		//fmt.Println(GetIdentifierName(tz), "=", tz)
+		// filter the directory
+		if strings.HasSuffix(tz, "/") {
+			continue
+		}
 		lines = append(lines, LineParam{
 			Identifier: GetIdentifierName(tz),
 			Value:      tz,
@@ -53,10 +56,13 @@ var locationMap = map[string]struct{}{
 		log.Fatalln(err)
 	}
 	out := buffer.Bytes()
+	if OutputFile == "" {
+		fmt.Println(string(out))
+		return
+	}
 	if err := os.WriteFile(OutputFile, out, 0644); err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println(string(out))
 }
 
 func GetTzDataPath() string {

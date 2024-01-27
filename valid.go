@@ -12,6 +12,7 @@
 package tzloc
 
 //go:generate go run cmd/extract.go -output location.go
+//go:generate gofmt -w location.go
 
 // ValidLocation checks whether the input is a valid location.
 func ValidLocation(loc string) bool {
